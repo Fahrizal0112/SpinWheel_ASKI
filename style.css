@@ -1,0 +1,339 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #333;
+}
+
+.container {
+    text-align: center;
+    padding: 20px;
+    max-width: 800px;
+    width: 100%;
+}
+
+h1 {
+    color: white;
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.wheel-container {
+    position: relative;
+    display: inline-block;
+    margin: 20px 0;
+}
+
+.wheel {
+    width: 400px;
+    height: 400px;
+    border-radius: 50%;
+    position: relative;
+    overflow: hidden;
+    border: 8px solid #fff;
+    box-shadow: 0 0 30px rgba(0,0,0,0.3);
+    transition: transform 4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.segment {
+    position: absolute;
+    width: 50%;
+    height: 50%;
+    transform-origin: 100% 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 12px;
+    text-align: center;
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.3);
+}
+
+.segment span {
+    transform: rotate(-18deg);
+    line-height: 1.2;
+}
+
+/* Warna untuk setiap segment */
+.segment-1 { background: #FF6B6B; transform: rotate(0deg); }
+.segment-2 { background: #4ECDC4; transform: rotate(36deg); }
+.segment-3 { background: #45B7D1; transform: rotate(72deg); }
+.segment-4 { background: #96CEB4; transform: rotate(108deg); }
+.segment-5 { background: #FFEAA7; transform: rotate(144deg); color: #333; }
+.segment-6 { background: #DDA0DD; transform: rotate(180deg); }
+.segment-7 { background: #98D8C8; transform: rotate(216deg); }
+.segment-8 { 
+    background: linear-gradient(45deg, #FFD700, #FFA500);
+    transform: rotate(252deg);
+    font-size: 10px;
+    font-weight: 900;
+    color: #8B0000;
+    border: 3px solid #FFD700;
+}
+.segment-9 { background: #F7DC6F; transform: rotate(288deg); color: #333; }
+.segment-10 { background: #BB8FCE; transform: rotate(324deg); }
+
+.pointer {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-top: 30px solid #fff;
+    z-index: 10;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+.spin-btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+    cursor: pointer;
+    z-index: 10;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+}
+
+.spin-btn:hover {
+    transform: translate(-50%, -50%) scale(1.1);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+}
+
+.spin-btn:active {
+    transform: translate(-50%, -50%) scale(0.95);
+}
+
+.spin-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.instructions {
+    margin-top: 30px;
+    background: rgba(255,255,255,0.9);
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.instructions p {
+    margin: 10px 0;
+    font-size: 16px;
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 5% auto;
+    padding: 0;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    animation: slideIn 0.3s ease;
+}
+
+.modal-header {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    color: white;
+    padding: 20px;
+    border-radius: 15px 15px 0 0;
+    position: relative;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 24px;
+}
+
+.close {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    color: white;
+}
+
+.close:hover {
+    opacity: 0.7;
+}
+
+.modal-body {
+    padding: 30px;
+    text-align: center;
+}
+
+.prize-icon {
+    font-size: 60px;
+    margin-bottom: 20px;
+}
+
+#prizeName {
+    color: #667eea;
+    margin: 20px 0;
+    font-size: 24px;
+}
+
+.question-section {
+    margin-top: 30px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 10px;
+}
+
+.question {
+    margin: 20px 0;
+}
+
+.question p {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.answer-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.answer-option {
+    padding: 12px 20px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.answer-option:hover {
+    border-color: #667eea;
+    background: #f0f4ff;
+}
+
+.answer-option.selected {
+    border-color: #667eea;
+    background: #667eea;
+    color: white;
+}
+
+.submit-btn, .claim-btn {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: all 0.3s ease;
+}
+
+.submit-btn:hover, .claim-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.result-section {
+    margin-top: 20px;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.result-section.correct {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.result-section.incorrect {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+    .wheel {
+        width: 300px;
+        height: 300px;
+    }
+    
+    .segment {
+        font-size: 10px;
+    }
+    
+    .segment-8 {
+        font-size: 8px;
+    }
+    
+    .spin-btn {
+        width: 60px;
+        height: 60px;
+        font-size: 12px;
+    }
+    
+    h1 {
+        font-size: 2rem;
+    }
+    
+    .modal-content {
+        margin: 10% auto;
+        width: 95%;
+    }
+}

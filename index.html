@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spin Wheel Hadiah</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🎁 Spin Wheel Hadiah 🎁</h1>
+        
+        <div class="wheel-container">
+            <div class="wheel" id="wheel">
+                <div class="segment segment-1" data-prize="Smartphone">
+                    <span>📱<br>Smartphone</span>
+                </div>
+                <div class="segment segment-2" data-prize="Voucher Belanja 100k">
+                    <span>🛍️<br>Voucher<br>100k</span>
+                </div>
+                <div class="segment segment-3" data-prize="Headphone Wireless">
+                    <span>🎧<br>Headphone<br>Wireless</span>
+                </div>
+                <div class="segment segment-4" data-prize="Tas Branded">
+                    <span>👜<br>Tas<br>Branded</span>
+                </div>
+                <div class="segment segment-5" data-prize="Sepatu Sneakers">
+                    <span>👟<br>Sepatu<br>Sneakers</span>
+                </div>
+                <div class="segment segment-6" data-prize="Jam Tangan">
+                    <span>⌚<br>Jam<br>Tangan</span>
+                </div>
+                <div class="segment segment-7" data-prize="Kamera Digital">
+                    <span>📷<br>Kamera<br>Digital</span>
+                </div>
+                <div class="segment segment-8" data-prize="Laptop Gaming" data-big-prize="true">
+                    <span>💻<br>LAPTOP<br>GAMING<br>⭐ HADIAH BESAR ⭐</span>
+                </div>
+                <div class="segment segment-9" data-prize="Power Bank">
+                    <span>🔋<br>Power<br>Bank</span>
+                </div>
+                <div class="segment segment-10" data-prize="Speaker Bluetooth">
+                    <span>🔊<br>Speaker<br>Bluetooth</span>
+                </div>
+            </div>
+            
+            <div class="pointer"></div>
+            
+            <button class="spin-btn" id="spinBtn">
+                <span>PUTAR</span>
+            </button>
+        </div>
+        
+        <div class="instructions">
+            <p>🎯 Klik tombol "PUTAR" untuk memutar wheel dan menangkan hadiah!</p>
+            <p>⭐ Ada 1 hadiah besar yang menanti Anda!</p>
+        </div>
+    </div>
+
+    <!-- Modal Popup -->
+    <div class="modal" id="prizeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="prizeTitle">Selamat!</h2>
+                <span class="close" id="closeModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="prize-icon" id="prizeIcon">🎁</div>
+                <p id="prizeText">Anda mendapatkan hadiah:</p>
+                <h3 id="prizeName"></h3>
+                <div class="question-section">
+                    <p id="questionText">Untuk mendapatkan hadiah ini, jawab pertanyaan berikut:</p>
+                    <div class="question" id="questionContainer">
+                        <p id="question"></p>
+                        <div class="answer-options" id="answerOptions"></div>
+                    </div>
+                    <button class="submit-btn" id="submitAnswer">Kirim Jawaban</button>
+                </div>
+                <div class="result-section" id="resultSection" style="display: none;">
+                    <p id="resultText"></p>
+                    <button class="claim-btn" id="claimPrize">Klaim Hadiah</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
