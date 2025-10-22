@@ -12,20 +12,24 @@ class SpinWheel {
         this.modal = document.getElementById('winnerModal');
         this.winnerPrize = document.getElementById('winnerPrize');
         this.closeModalBtn = document.getElementById('closeModalBtn');
+        this.takeOutBtn = document.getElementById('takeOutBtn');
         this.closeSpan = document.querySelector('.close');
+        
+        // Store current winning prize for take out functionality
+        this.currentWinningPrize = null;
 
         // Default prizes
         this.defaultPrizes = [
-            'Smartphone Samsung',
-            'Laptop ASUS',
-            'Voucher Belanja 500K',
-            'Sepeda Gunung',
-            'Headphone Wireless',
-            'Smartwatch',
-            'Voucher Makan 200K',
-            'Power Bank 20000mAh',
-            'Kamera Digital',
-            'Uang Tunai 1 Juta'
+            'HELM GRIN',
+            'HELM GRIN',
+            'HELM GRIN',
+            'HELM GRIN',
+            'HELM GRIN',
+            'HELM GRIN',
+            'HELM GRIN',
+            'CAR AIR PURIFIER',
+            'CAR AIR PURIFIER',
+            'CAR AIR PURIFIER'
         ];
 
         this.prizes = [...this.defaultPrizes];
@@ -51,6 +55,7 @@ class SpinWheel {
         this.resetBtn.addEventListener('click', () => this.resetPrizes());
         this.defaultBtn.addEventListener('click', () => this.loadDefaultPrizes());
         this.closeModalBtn.addEventListener('click', () => this.closeModal());
+        this.takeOutBtn.addEventListener('click', () => this.takeOutPrize());
         this.closeSpan.addEventListener('click', () => this.closeModal());
         
         // Close modal when clicking outside
@@ -212,9 +217,31 @@ class SpinWheel {
     }
 
     showWinner(prize) {
+        this.currentWinningPrize = prize;
         this.resultDiv.innerHTML = `🎉 <strong>Pemenang:</strong> ${prize}`;
         this.winnerPrize.textContent = prize;
         this.modal.style.display = 'block';
+    }
+
+    takeOutPrize() {
+        if (this.currentWinningPrize) {
+            // Find and remove the first occurrence of the winning prize
+            const prizeIndex = this.prizes.indexOf(this.currentWinningPrize);
+            if (prizeIndex !== -1) {
+                this.prizes.splice(prizeIndex, 1);
+                this.updatePrizeList();
+                this.drawWheel();
+                
+                // Update result display
+                this.resultDiv.innerHTML = `✅ <strong>Hadiah "${this.currentWinningPrize}" telah diambil!</strong>`;
+                
+                // Close modal
+                this.closeModal();
+                
+                // Reset current winning prize
+                this.currentWinningPrize = null;
+            }
+        }
     }
 
     closeModal() {
