@@ -1,264 +1,323 @@
 class SpinWheel {
     constructor() {
-        this.wheel = document.getElementById('wheel');
+        this.canvas = document.getElementById('wheelCanvas');
+        this.ctx = this.canvas.getContext('2d');
         this.spinBtn = document.getElementById('spinBtn');
-        this.modal = document.getElementById('prizeModal');
-        this.closeModal = document.getElementById('closeModal');
-        
+        this.resultDiv = document.getElementById('result');
+        this.prizeInput = document.getElementById('prizeInput');
+        this.addPrizeBtn = document.getElementById('addPrizeBtn');
+        this.prizeListContainer = document.getElementById('prizeListContainer');
+        this.resetBtn = document.getElementById('resetBtn');
+        this.defaultBtn = document.getElementById('defaultBtn');
+        this.modal = document.getElementById('winnerModal');
+        this.winnerPrize = document.getElementById('winnerPrize');
+        this.closeModalBtn = document.getElementById('closeModalBtn');
+        this.closeSpan = document.querySelector('.close');
+
+        // Default prizes
+        this.defaultPrizes = [
+            'Smartphone Samsung',
+            'Laptop ASUS',
+            'Voucher Belanja 500K',
+            'Sepeda Gunung',
+            'Headphone Wireless',
+            'Smartwatch',
+            'Voucher Makan 200K',
+            'Power Bank 20000mAh',
+            'Kamera Digital',
+            'Uang Tunai 1 Juta'
+        ];
+
+        this.prizes = [...this.defaultPrizes];
         this.isSpinning = false;
         this.currentRotation = 0;
-        
-        // Data hadiah dan pertanyaan
-        this.prizes = [
-            {
-                name: "Smartphone",
-                icon: "📱",
-                question: "Apa kepanjangan dari 'RAM' dalam komputer?",
-                options: ["Random Access Memory", "Read Access Memory", "Rapid Access Memory", "Real Access Memory"],
-                correct: 0
-            },
-            {
-                name: "Voucher Belanja 100k",
-                icon: "🛍️",
-                question: "Siapa presiden pertama Indonesia?",
-                options: ["Soekarno", "Soeharto", "B.J. Habibie", "Megawati"],
-                correct: 0
-            },
-            {
-                name: "Headphone Wireless",
-                icon: "🎧",
-                question: "Planet terdekat dengan matahari adalah?",
-                options: ["Venus", "Mars", "Merkurius", "Bumi"],
-                correct: 2
-            },
-            {
-                name: "Tas Branded",
-                icon: "👜",
-                question: "Berapa jumlah provinsi di Indonesia saat ini?",
-                options: ["32", "33", "34", "38"],
-                correct: 3
-            },
-            {
-                name: "Sepatu Sneakers",
-                icon: "👟",
-                question: "Apa ibu kota Australia?",
-                options: ["Sydney", "Melbourne", "Canberra", "Perth"],
-                correct: 2
-            },
-            {
-                name: "Jam Tangan",
-                icon: "⌚",
-                question: "Siapa penemu lampu pijar?",
-                options: ["Thomas Edison", "Nikola Tesla", "Alexander Bell", "Albert Einstein"],
-                correct: 0
-            },
-            {
-                name: "Kamera Digital",
-                icon: "📷",
-                question: "Apa gas yang paling banyak di atmosfer bumi?",
-                options: ["Oksigen", "Karbon Dioksida", "Nitrogen", "Hidrogen"],
-                correct: 2
-            },
-            {
-                name: "Laptop Gaming",
-                icon: "💻",
-                isBigPrize: true,
-                question: "Siapa yang menciptakan World Wide Web (WWW)?",
-                options: ["Bill Gates", "Steve Jobs", "Tim Berners-Lee", "Mark Zuckerberg"],
-                correct: 2
-            },
-            {
-                name: "Power Bank",
-                icon: "🔋",
-                question: "Apa nama mata uang Jepang?",
-                options: ["Won", "Yuan", "Yen", "Ringgit"],
-                correct: 2
-            },
-            {
-                name: "Speaker Bluetooth",
-                icon: "🔊",
-                question: "Berapa jumlah benua di dunia?",
-                options: ["5", "6", "7", "8"],
-                correct: 2
-            }
-        ];
-        
+
         this.init();
     }
-    
+
     init() {
+        this.drawWheel();
+        this.updatePrizeList();
+        this.bindEvents();
+        this.resultDiv.textContent = 'Klik tombol "PUTAR RODA!" untuk memulai undian';
+    }
+
+    bindEvents() {
         this.spinBtn.addEventListener('click', () => this.spin());
-        this.closeModal.addEventListener('click', () => this.hideModal());
+        this.addPrizeBtn.addEventListener('click', () => this.addPrize());
+        this.prizeInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.addPrize();
+        });
+        this.resetBtn.addEventListener('click', () => this.resetPrizes());
+        this.defaultBtn.addEventListener('click', () => this.loadDefaultPrizes());
+        this.closeModalBtn.addEventListener('click', () => this.closeModal());
+        this.closeSpan.addEventListener('click', () => this.closeModal());
         
         // Close modal when clicking outside
         window.addEventListener('click', (e) => {
-            if (e.target === this.modal) {
-                this.hideModal();
-            }
+            if (e.target === this.modal) this.closeModal();
         });
-        
-        // Submit answer button
-        document.getElementById('submitAnswer').addEventListener('click', () => this.submitAnswer());
-        
-        // Claim prize button
-        document.getElementById('claimPrize').addEventListener('click', () => this.claimPrize());
     }
-    
-    spin() {
-        if (this.isSpinning) return;
+
+    drawWheel() {
+        const centerX = this.canvas.width / 2;
+        const centerY = this.canvas.height / 2;
+        const radius = 200;
+
+        // Clear canvas
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        if (this.prizes.length === 0) {
+            // Draw empty wheel
+            this.ctx.beginPath();
+            this.ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            this.ctx.fillStyle = '#f0f0f0';
+            this.ctx.fill();
+            this.ctx.strokeStyle = '#cc0000';
+            this.ctx.lineWidth = 4;
+            this.ctx.stroke();
+
+            // Draw "No Prizes" text
+            this.ctx.fillStyle = '#666';
+            this.ctx.font = 'bold 20px Arial';
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText('Tidak Ada Hadiah', centerX, centerY);
+            return;
+        }
+
+        const anglePerPrize = (2 * Math.PI) / this.prizes.length;
+        const colors = this.generateColors(this.prizes.length);
+
+        // Draw wheel segments
+        for (let i = 0; i < this.prizes.length; i++) {
+            const startAngle = i * anglePerPrize;
+            const endAngle = (i + 1) * anglePerPrize;
+
+            // Draw segment
+            this.ctx.beginPath();
+            this.ctx.moveTo(centerX, centerY);
+            this.ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+            this.ctx.closePath();
+            this.ctx.fillStyle = colors[i];
+            this.ctx.fill();
+            this.ctx.strokeStyle = '#fff';
+            this.ctx.lineWidth = 3;
+            this.ctx.stroke();
+
+            // Draw text
+            this.ctx.save();
+            this.ctx.translate(centerX, centerY);
+            this.ctx.rotate(startAngle + anglePerPrize / 2);
+            this.ctx.fillStyle = '#fff';
+            this.ctx.font = 'bold 14px Arial';
+            this.ctx.textAlign = 'left';
+            this.ctx.textBaseline = 'middle';
+            
+            // Wrap text if too long
+            const text = this.prizes[i];
+            const maxWidth = radius - 20;
+            this.wrapText(text, 20, 0, maxWidth, 16);
+            
+            this.ctx.restore();
+        }
+
+        // Draw center circle
+        this.ctx.beginPath();
+        this.ctx.arc(centerX, centerY, 20, 0, 2 * Math.PI);
+        this.ctx.fillStyle = '#cc0000';
+        this.ctx.fill();
+        this.ctx.strokeStyle = '#fff';
+        this.ctx.lineWidth = 3;
+        this.ctx.stroke();
+    }
+
+    wrapText(text, x, y, maxWidth, lineHeight) {
+        const words = text.split(' ');
+        let line = '';
+        let lines = [];
+
+        for (let n = 0; n < words.length; n++) {
+            const testLine = line + words[n] + ' ';
+            const metrics = this.ctx.measureText(testLine);
+            const testWidth = metrics.width;
+            
+            if (testWidth > maxWidth && n > 0) {
+                lines.push(line);
+                line = words[n] + ' ';
+            } else {
+                line = testLine;
+            }
+        }
+        lines.push(line);
+
+        // Draw lines
+        const startY = y - (lines.length - 1) * lineHeight / 2;
+        for (let i = 0; i < lines.length; i++) {
+            this.ctx.fillText(lines[i], x, startY + i * lineHeight);
+        }
+    }
+
+    generateColors(count) {
+        const colors = [];
+        const baseColors = [
+            '#ff4444', '#cc0000', '#ff6666', '#aa0000',
+            '#ff8888', '#880000', '#ffaaaa', '#660000'
+        ];
         
+        for (let i = 0; i < count; i++) {
+            colors.push(baseColors[i % baseColors.length]);
+        }
+        return colors;
+    }
+
+    spin() {
+        if (this.isSpinning || this.prizes.length === 0) return;
+
         this.isSpinning = true;
         this.spinBtn.disabled = true;
-        this.spinBtn.innerHTML = '<span>BERPUTAR...</span>';
-        
-        // Random rotation (multiple full rotations + random angle)
+        this.spinBtn.textContent = 'BERPUTAR...';
+        this.resultDiv.textContent = 'Roda sedang berputar...';
+
+        // Calculate random rotation (multiple full rotations + random angle)
         const minRotation = 1440; // 4 full rotations
         const maxRotation = 2160; // 6 full rotations
         const randomRotation = Math.random() * (maxRotation - minRotation) + minRotation;
         
         this.currentRotation += randomRotation;
-        this.wheel.style.transform = `rotate(${this.currentRotation}deg)`;
-        
-        // Calculate which segment was selected
+
+        // Apply rotation with CSS animation
+        this.canvas.style.setProperty('--spin-rotation', `${this.currentRotation}deg`);
+        this.canvas.classList.add('spinning');
+
+        // Calculate winner after animation
         setTimeout(() => {
-            const normalizedRotation = this.currentRotation % 360;
-            const segmentAngle = 360 / 10; // 10 segments
-            const selectedSegment = Math.floor((360 - normalizedRotation + segmentAngle/2) / segmentAngle) % 10;
-            
-            this.showPrize(selectedSegment);
-            this.resetSpinButton();
-        }, 4000);
+            this.calculateWinner();
+            this.canvas.classList.remove('spinning');
+            this.isSpinning = false;
+            this.spinBtn.disabled = false;
+            this.spinBtn.textContent = 'PUTAR RODA!';
+        }, 3000);
     }
-    
-    resetSpinButton() {
-        this.isSpinning = false;
-        this.spinBtn.disabled = false;
-        this.spinBtn.innerHTML = '<span>PUTAR</span>';
+
+    calculateWinner() {
+        const normalizedRotation = this.currentRotation % 360;
+        const anglePerPrize = 360 / this.prizes.length;
+        
+        // Adjust for pointer position (top of wheel)
+        const adjustedAngle = (360 - normalizedRotation + (anglePerPrize / 2)) % 360;
+        const winnerIndex = Math.floor(adjustedAngle / anglePerPrize);
+        
+        const winner = this.prizes[winnerIndex];
+        this.showWinner(winner);
     }
-    
-    showPrize(segmentIndex) {
-        const prize = this.prizes[segmentIndex];
-        
-        // Update modal content
-        document.getElementById('prizeIcon').textContent = prize.icon;
-        document.getElementById('prizeName').textContent = prize.name;
-        
-        if (prize.isBigPrize) {
-            document.getElementById('prizeTitle').textContent = '🎉 HADIAH BESAR! 🎉';
-            document.getElementById('prizeText').textContent = 'Selamat! Anda mendapatkan HADIAH BESAR:';
-            document.getElementById('prizeName').style.color = '#FFD700';
-            document.getElementById('prizeName').style.fontSize = '28px';
-        } else {
-            document.getElementById('prizeTitle').textContent = 'Selamat!';
-            document.getElementById('prizeText').textContent = 'Anda mendapatkan hadiah:';
-            document.getElementById('prizeName').style.color = '#667eea';
-            document.getElementById('prizeName').style.fontSize = '24px';
+
+    showWinner(prize) {
+        this.resultDiv.innerHTML = `🎉 <strong>Pemenang:</strong> ${prize}`;
+        this.winnerPrize.textContent = prize;
+        this.modal.style.display = 'block';
+    }
+
+    closeModal() {
+        this.modal.style.display = 'none';
+    }
+
+    addPrize() {
+        const prizeName = this.prizeInput.value.trim();
+        if (prizeName && !this.prizes.includes(prizeName)) {
+            this.prizes.push(prizeName);
+            this.prizeInput.value = '';
+            this.updatePrizeList();
+            this.drawWheel();
+        } else if (this.prizes.includes(prizeName)) {
+            alert('Hadiah sudah ada dalam daftar!');
         }
-        
-        // Setup question
-        this.setupQuestion(prize);
-        
-        // Show modal
-        this.showModal();
     }
-    
-    setupQuestion(prize) {
-        document.getElementById('question').textContent = prize.question;
+
+    deletePrize(index) {
+        this.prizes.splice(index, 1);
+        this.updatePrizeList();
+        this.drawWheel();
         
-        const optionsContainer = document.getElementById('answerOptions');
-        optionsContainer.innerHTML = '';
-        
-        prize.options.forEach((option, index) => {
-            const optionElement = document.createElement('div');
-            optionElement.className = 'answer-option';
-            optionElement.textContent = option;
-            optionElement.dataset.index = index;
-            
-            optionElement.addEventListener('click', () => {
-                // Remove previous selection
-                document.querySelectorAll('.answer-option').forEach(opt => {
-                    opt.classList.remove('selected');
-                });
-                
-                // Add selection to clicked option
-                optionElement.classList.add('selected');
-            });
-            
-            optionsContainer.appendChild(optionElement);
-        });
-        
-        // Store current prize for answer checking
-        this.currentPrize = prize;
-        
-        // Reset sections
-        document.querySelector('.question-section').style.display = 'block';
-        document.getElementById('resultSection').style.display = 'none';
+        if (this.prizes.length === 0) {
+            this.resultDiv.textContent = 'Tambahkan hadiah untuk memulai undian';
+        }
     }
-    
-    submitAnswer() {
-        const selectedOption = document.querySelector('.answer-option.selected');
+
+    updatePrizeList() {
+        this.prizeListContainer.innerHTML = '';
         
-        if (!selectedOption) {
-            alert('Silakan pilih jawaban terlebih dahulu!');
+        if (this.prizes.length === 0) {
+            this.prizeListContainer.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">Belum ada hadiah. Tambahkan hadiah untuk memulai.</p>';
             return;
         }
-        
-        const selectedIndex = parseInt(selectedOption.dataset.index);
-        const isCorrect = selectedIndex === this.currentPrize.correct;
-        
-        // Hide question section
-        document.querySelector('.question-section').style.display = 'none';
-        
-        // Show result section
-        const resultSection = document.getElementById('resultSection');
-        const resultText = document.getElementById('resultText');
-        
-        resultSection.style.display = 'block';
-        
-        if (isCorrect) {
-            resultSection.className = 'result-section correct';
-            resultText.textContent = '🎉 Jawaban Benar! Anda berhak mendapatkan hadiah ini!';
-            document.getElementById('claimPrize').style.display = 'inline-block';
-        } else {
-            resultSection.className = 'result-section incorrect';
-            resultText.textContent = `❌ Jawaban Salah! Jawaban yang benar adalah: ${this.currentPrize.options[this.currentPrize.correct]}. Silakan coba lagi!`;
-            document.getElementById('claimPrize').style.display = 'none';
+
+        this.prizes.forEach((prize, index) => {
+            const prizeItem = document.createElement('div');
+            prizeItem.className = 'prize-item';
+            prizeItem.innerHTML = `
+                <span class="prize-name">${prize}</span>
+                <button class="delete-btn" onclick="spinWheel.deletePrize(${index})">Hapus</button>
+            `;
+            this.prizeListContainer.appendChild(prizeItem);
+        });
+    }
+
+    resetPrizes() {
+        if (confirm('Apakah Anda yakin ingin menghapus semua hadiah?')) {
+            this.prizes = [];
+            this.updatePrizeList();
+            this.drawWheel();
+            this.resultDiv.textContent = 'Semua hadiah telah dihapus. Tambahkan hadiah baru untuk memulai.';
         }
     }
-    
-    claimPrize() {
-        alert(`🎁 Selamat! Hadiah "${this.currentPrize.name}" akan segera diproses. Tim kami akan menghubungi Anda!`);
-        this.hideModal();
-    }
-    
-    showModal() {
-        this.modal.style.display = 'block';
-        document.body.style.overflow = 'hidden';
-    }
-    
-    hideModal() {
-        this.modal.style.display = 'none';
-        document.body.style.overflow = 'auto';
+
+    loadDefaultPrizes() {
+        if (confirm('Apakah Anda yakin ingin memuat hadiah default? Ini akan mengganti semua hadiah yang ada.')) {
+            this.prizes = [...this.defaultPrizes];
+            this.updatePrizeList();
+            this.drawWheel();
+            this.resultDiv.textContent = 'Hadiah default telah dimuat. Klik "PUTAR RODA!" untuk memulai undian.';
+        }
     }
 }
 
 // Initialize the spin wheel when page loads
+let spinWheel;
 document.addEventListener('DOMContentLoaded', () => {
-    new SpinWheel();
+    spinWheel = new SpinWheel();
 });
 
-// Add some fun animations
+// Add some visual feedback for better UX
 document.addEventListener('DOMContentLoaded', () => {
-    // Add floating animation to title
-    const title = document.querySelector('h1');
-    title.style.animation = 'float 3s ease-in-out infinite';
-    
-    // Add CSS for floating animation
+    // Add loading animation
     const style = document.createElement('style');
     style.textContent = `
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+        
+        .prize-item {
+            transition: all 0.3s ease;
+        }
+        
+        .prize-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .form-group input:focus {
+            transform: scale(1.02);
+        }
+        
+        .spin-button:hover {
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1) translateY(-2px); }
+            50% { transform: scale(1.05) translateY(-2px); }
+            100% { transform: scale(1) translateY(-2px); }
         }
     `;
     document.head.appendChild(style);
