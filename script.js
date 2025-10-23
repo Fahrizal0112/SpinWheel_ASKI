@@ -9,6 +9,7 @@ class SpinWheel {
         this.prizeListContainer = document.getElementById('prizeListContainer');
         this.resetBtn = document.getElementById('resetBtn');
         this.defaultBtn = document.getElementById('defaultBtn');
+        this.clearStorageBtn = document.getElementById('clearStorageBtn');
         this.modal = document.getElementById('winnerModal');
         this.winnerPrize = document.getElementById('winnerPrize');
         this.closeModalBtn = document.getElementById('closeModalBtn');
@@ -32,6 +33,8 @@ class SpinWheel {
             'CAR AIR PURIFIER'
         ];
 
+        this.storageKey = 'askiSpinWheelPrizes';
+        
         this.prizes = [...this.defaultPrizes];
         this.isSpinning = false;
         this.currentRotation = 0;
@@ -40,6 +43,7 @@ class SpinWheel {
     }
 
     init() {
+        this.loadPrizesFromStorage();
         this.drawWheel();
         this.updatePrizeList();
         this.bindEvents();
@@ -54,6 +58,7 @@ class SpinWheel {
         });
         this.resetBtn.addEventListener('click', () => this.resetPrizes());
         this.defaultBtn.addEventListener('click', () => this.loadDefaultPrizes());
+        this.clearStorageBtn.addEventListener('click', () => this.clearStorageAndReset());
         this.closeModalBtn.addEventListener('click', () => this.closeModal());
         this.takeOutBtn.addEventListener('click', () => this.takeOutPrize());
         this.closeSpan.addEventListener('click', () => this.closeModal());
@@ -229,6 +234,7 @@ class SpinWheel {
             const prizeIndex = this.prizes.indexOf(this.currentWinningPrize);
             if (prizeIndex !== -1) {
                 this.prizes.splice(prizeIndex, 1);
+                this.savePrizesToStorage();
                 this.updatePrizeList();
                 this.drawWheel();
                 
@@ -253,6 +259,7 @@ class SpinWheel {
         if (prizeName) {
             this.prizes.push(prizeName);
             this.prizeInput.value = '';
+            this.savePrizesToStorage();
             this.updatePrizeList();
             this.drawWheel();
         }
@@ -260,6 +267,7 @@ class SpinWheel {
 
     deletePrize(index) {
         this.prizes.splice(index, 1);
+        this.savePrizesToStorage();
         this.updatePrizeList();
         this.drawWheel();
         
@@ -290,6 +298,7 @@ class SpinWheel {
     resetPrizes() {
         if (confirm('Apakah Anda yakin ingin menghapus semua hadiah?')) {
             this.prizes = [];
+            this.savePrizesToStorage();
             this.updatePrizeList();
             this.drawWheel();
             this.resultDiv.textContent = 'Semua hadiah telah dihapus. Tambahkan hadiah baru untuk memulai.';
@@ -299,9 +308,54 @@ class SpinWheel {
     loadDefaultPrizes() {
         if (confirm('Apakah Anda yakin ingin memuat hadiah default? Ini akan mengganti semua hadiah yang ada.')) {
             this.prizes = [...this.defaultPrizes];
+            this.savePrizesToStorage();
             this.updatePrizeList();
             this.drawWheel();
             this.resultDiv.textContent = 'Hadiah default telah dimuat. Klik "PUTAR RODA!" untuk memulai undian.';
+        }
+    }
+
+    // localStorage functions
+    savePrizesToStorage() {
+        try {
+            localStorage.setItem(this.storageKey, JSON.stringify(this.prizes));
+        } catch (error) {
+            console.warn('Tidak dapat menyimpan data ke localStorage:', error);
+        }
+    }
+
+    loadPrizesFromStorage() {
+        try {
+            const savedPrizes = localStorage.getItem(this.storageKey);
+            if (savedPrizes) {
+                const parsedPrizes = JSON.parse(savedPrizes);
+                if (Array.isArray(parsedPrizes) && parsedPrizes.length > 0) {
+                    this.prizes = parsedPrizes;
+                }
+            }
+        } catch (error) {
+            console.warn('Tidak dapat memuat data dari localStorage:', error);
+            // Fallback to default prizes if loading fails
+            this.prizes = [...this.defaultPrizes];
+        }
+    }
+
+    clearStorage() {
+        try {
+            localStorage.removeItem(this.storageKey);
+        } catch (error) {
+            console.warn('Tidak dapat menghapus data dari localStorage:', error);
+        }
+    }
+
+    clearStorageAndReset() {
+        if (confirm('Apakah Anda yakin ingin menghapus semua data tersimpan dan kembali ke hadiah default?')) {
+            this.clearStorage();
+            this.prizes = [...this.defaultPrizes];
+            this.savePrizesToStorage();
+            this.updatePrizeList();
+            this.drawWheel();
+            this.resultDiv.textContent = 'Data tersimpan telah dihapus dan hadiah default dimuat ulang.';
         }
     }
 }
