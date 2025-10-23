@@ -98,10 +98,10 @@ class SpinWheel {
         const anglePerPrize = (2 * Math.PI) / this.prizes.length;
         const colors = this.generateColors(this.prizes.length);
 
-        // Draw wheel segments
+        // Draw wheel segments (start from top, under the pointer)
         for (let i = 0; i < this.prizes.length; i++) {
-            const startAngle = i * anglePerPrize;
-            const endAngle = (i + 1) * anglePerPrize;
+            const startAngle = (i * anglePerPrize) - (Math.PI / 2); // Start from top
+            const endAngle = ((i + 1) * anglePerPrize) - (Math.PI / 2);
 
             // Draw segment
             this.ctx.beginPath();
@@ -213,9 +213,23 @@ class SpinWheel {
         const normalizedRotation = this.currentRotation % 360;
         const anglePerPrize = 360 / this.prizes.length;
         
-        // Adjust for pointer position (top of wheel)
-        const adjustedAngle = (360 - normalizedRotation + (anglePerPrize / 2)) % 360;
-        const winnerIndex = Math.floor(adjustedAngle / anglePerPrize);
+        // Since wheel rotates clockwise but we want to find which segment is under the pointer,
+        // we need to calculate in reverse direction
+        // The wheel starts from top (index 0), so we reverse the calculation
+        let winnerIndex = Math.floor((360 - normalizedRotation) / anglePerPrize);
+        
+        // Ensure index is within bounds
+        winnerIndex = winnerIndex % this.prizes.length;
+        
+        // Debug info to help troubleshoot
+        console.log(`🎯 Winner Calculation (FIXED):
+        - Current rotation: ${this.currentRotation}°
+        - Normalized: ${normalizedRotation}°
+        - Reversed angle: ${360 - normalizedRotation}°
+        - Angle per prize: ${anglePerPrize.toFixed(2)}°
+        - Winner index: ${winnerIndex}
+        - Winner: "${this.prizes[winnerIndex]}"
+        - All prizes: [${this.prizes.map((p, i) => `${i}:"${p}"`).join(', ')}]`);
         
         const winner = this.prizes[winnerIndex];
         this.showWinner(winner);
