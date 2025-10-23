@@ -250,13 +250,11 @@ class SpinWheel {
 
     addPrize() {
         const prizeName = this.prizeInput.value.trim();
-        if (prizeName && !this.prizes.includes(prizeName)) {
+        if (prizeName) {
             this.prizes.push(prizeName);
             this.prizeInput.value = '';
             this.updatePrizeList();
             this.drawWheel();
-        } else if (this.prizes.includes(prizeName)) {
-            alert('Hadiah sudah ada dalam daftar!');
         }
     }
 
